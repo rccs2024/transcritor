@@ -7,11 +7,13 @@ import tempfile
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
+    """Baixa o áudio em formato .webm sem pós-processamento com ffmpeg"""
     result = subprocess.run([
-        "yt-dlp", "-f", "bestaudio",
-        "--extract-audio", "--audio-format", "mp3",
-        "-o", saida_audio, video_url
+        "yt-dlp", "-f", "bestaudio[ext=webm]",
+        "-o", saida_audio,
+        video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    
     if result.returncode != 0:
         raise Exception(f"Erro ao baixar áudio:\n{result.stderr}")
 
@@ -38,7 +40,7 @@ def formatar_para_word(texto: str, caminho_docx: str):
 
 #st.title("🎧 Transcritor de Vídeo YouTube com Whisper")
 st.markdown("""
-<h1 style='text-align: center; color: black; margin-bottom: 1rem;'>
+<h1 style='text-align: center; color: ; margin-bottom: 1rem;'>
 🎧 Transcritor de Vídeo YouTube com Whisper
 </h1>
 """, unsafe_allow_html=True)
