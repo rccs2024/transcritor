@@ -7,12 +7,10 @@ import tempfile
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
-    """Baixa o áudio original sem pós-processamento do ffmpeg"""
+    """Baixa o áudio em formato webm sem necessidade de ffmpeg"""
     result = subprocess.run([
         "yt-dlp",
-        "-f", "bestaudio[ext=webm]",  # baixa diretamente .webm
-        "--no-post-overwrites",       # evita reprocessamento
-        "--no-postprocessors",        # evita ffmpeg
+        "-f", "bestaudio[ext=webm]",
         "-o", saida_audio,
         video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
