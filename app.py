@@ -7,10 +7,12 @@ import tempfile
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
-    """Baixa o áudio como MP3 diretamente com yt-dlp (sem ffmpeg externo)"""
+    """Baixa o áudio original sem pós-processamento do ffmpeg"""
     result = subprocess.run([
         "yt-dlp",
-        "-x", "--audio-format", "mp3",
+        "-f", "bestaudio[ext=webm]",  # baixa diretamente .webm
+        "--no-post-overwrites",       # evita reprocessamento
+        "--no-postprocessors",        # evita ffmpeg
         "-o", saida_audio,
         video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -54,7 +56,7 @@ if st.button("Transcrever"):
         try:
             progress = st.progress(0)
             with tempfile.TemporaryDirectory() as temp_dir:
-                audio_path = os.path.join(temp_dir, "audio.mp3")
+                audio_path = os.path.join(temp_dir, "audio.webm")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
 
