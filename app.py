@@ -7,15 +7,11 @@ import tempfile
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
-    """Baixa o áudio como MP3 para compatibilidade no Streamlit Cloud"""
     result = subprocess.run([
-        "yt-dlp",
-        "--extract-audio",
-        "--audio-format", "mp3",
-        "-o", saida_audio,
-        video_url
+        "yt-dlp", "-f", "bestaudio",
+        "--extract-audio", "--audio-format", "mp3",
+        "-o", saida_audio, video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
     if result.returncode != 0:
         raise Exception(f"Erro ao baixar áudio:\n{result.stderr}")
 
@@ -40,8 +36,9 @@ def formatar_para_word(texto: str, caminho_docx: str):
 
 # ------------------ INTERFACE STREAMLIT ------------------ #
 
+#st.title("🎧 Transcritor de Vídeo YouTube com Whisper")
 st.markdown("""
-<h1 style='text-align: center;'>
+<h1 style='text-align: center; color: black; margin-bottom: 1rem;'>
 🎧 Transcritor de Vídeo YouTube com Whisper
 </h1>
 """, unsafe_allow_html=True)
@@ -55,22 +52,17 @@ if st.button("Transcrever"):
         try:
             progress = st.progress(0)
             with tempfile.TemporaryDirectory() as temp_dir:
-                audio_path = os.path.join(temp_dir, "audio.%(ext)s")  # yt-dlp substitui %(ext)s
-                audio_mp3 = os.path.join(temp_dir, "audio.mp3")
+                audio_path = os.path.join(temp_dir, "audio.mp3")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
                 
                 progress.progress(10)
                 st.info("🔄 Baixando áudio...")
                 baixar_audio(video_url, audio_path)
-
-                # Após download, yt-dlp deve criar algo como audio.mp3
-                downloaded_file = [f for f in os.listdir(temp_dir) if f.endswith(".mp3")][0]
-                downloaded_audio_path = os.path.join(temp_dir, downloaded_file)
                 
                 progress.progress(40)
                 st.info("🧠 Transcrevendo áudio com Whisper...")
-                texto = transcrever_audio("base", downloaded_audio_path)
+                texto = transcrever_audio("base", audio_path)
                 
                 progress.progress(70)
                 st.info("💾 Salvando transcrição...")
@@ -89,10 +81,10 @@ if st.button("Transcrever"):
 
         except Exception as e:
             st.error(f"❌ Ocorreu um erro: {e}")
-
+    
 st.markdown("""
-<hr style="margin-top: 3rem; margin-bottom: 1rem;">
-<p style='text-align: center; font-size: 0.875rem; color: gray;'>
-Desenvolvido por <b>Ronald César</b> • Versão 1.0
-</p>
-""", unsafe_allow_html=True)
+        <hr style="margin-top: 3rem; margin-bottom: 1rem;">
+        <p style='text-align: center; font-size: 0.875rem; color: gray;'>
+        Desenvolvido por <b>Ronald César</b> • Versão 1.0
+        </p>
+        """, unsafe_allow_html=True)
