@@ -1,1 +1,5 @@
 streamlit
+yt-dlp
+openai-whisper
+python-docx
+torch --extra-index-url https://download.pytorch.org/whl/cpu
