@@ -7,14 +7,14 @@ import tempfile
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
-    """Baixa o áudio em formato webm sem necessidade de ffmpeg"""
+    """Baixa o áudio em formato .webm compatível com Streamlit Cloud"""
     result = subprocess.run([
         "yt-dlp",
         "-f", "bestaudio[ext=webm]",
         "-o", saida_audio,
         video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
+    
     if result.returncode != 0:
         raise Exception(f"Erro ao baixar áudio:\n{result.stderr}")
 
@@ -40,7 +40,7 @@ def formatar_para_word(texto: str, caminho_docx: str):
 # ------------------ INTERFACE STREAMLIT ------------------ #
 
 st.markdown("""
-<h1 style='text-align: center; margin-bottom: 1rem;'>
+<h1 style='text-align: center;'>
 🎧 Transcritor de Vídeo YouTube com Whisper
 </h1>
 """, unsafe_allow_html=True)
@@ -57,23 +57,23 @@ if st.button("Transcrever"):
                 audio_path = os.path.join(temp_dir, "audio.webm")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
-
+                
                 progress.progress(10)
                 st.info("🔄 Baixando áudio...")
                 baixar_audio(video_url, audio_path)
-
+                
                 progress.progress(40)
                 st.info("🧠 Transcrevendo áudio com Whisper...")
                 texto = transcrever_audio("base", audio_path)
-
+                
                 progress.progress(70)
                 st.info("💾 Salvando transcrição...")
                 salvar_txt(texto, txt_path)
-
+                
                 progress.progress(90)
                 st.info("📄 Formatando transcrição para .docx...")
                 formatar_para_word(texto, docx_path)
-
+                
                 progress.progress(100)
                 st.success("✅ Transcrição concluída!")
 
