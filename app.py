@@ -4,6 +4,7 @@ import whisper
 import os
 import re
 import tempfile
+import ffmpeg
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
@@ -16,6 +17,10 @@ def baixar_audio(video_url: str, saida_audio: str):
     
     if result.returncode != 0:
         raise Exception(f"Erro ao baixar áudio:\n{result.stderr}")
+
+def converter_para_wav(input_path: str, output_path: str):
+    """Converte .webm para .wav usando ffmpeg-python"""
+    ffmpeg.input(input_path).output(output_path).run(overwrite_output=True)
 
 def transcrever_audio(modelo: str, arquivo_audio: str) -> str:
     model = whisper.load_model(modelo)
@@ -38,7 +43,6 @@ def formatar_para_word(texto: str, caminho_docx: str):
 
 # ------------------ INTERFACE STREAMLIT ------------------ #
 
-#st.title("🎧 Transcritor de Vídeo YouTube com Whisper")
 st.markdown("""
 <h1 style='text-align: center; color: ; margin-bottom: 1rem;'>
 🎧 Transcritor de Vídeo YouTube com Whisper
@@ -54,26 +58,31 @@ if st.button("Transcrever"):
         try:
             progress = st.progress(0)
             with tempfile.TemporaryDirectory() as temp_dir:
-                audio_path = os.path.join(temp_dir, "audio.webm")
+                audio_webm = os.path.join(temp_dir, "audio.webm")
+                audio_wav = os.path.join(temp_dir, "audio.wav")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
-                
+
                 progress.progress(10)
                 st.info("🔄 Baixando áudio...")
-                baixar_audio(video_url, audio_path)
-                
-                progress.progress(40)
+                baixar_audio(video_url, audio_webm)
+
+                progress.progress(30)
+                st.info("🔁 Convertendo áudio para WAV...")
+                converter_para_wav(audio_webm, audio_wav)
+
+                progress.progress(50)
                 st.info("🧠 Transcrevendo áudio com Whisper...")
-                texto = transcrever_audio("base", audio_path)
-                
+                texto = transcrever_audio("base", audio_wav)
+
                 progress.progress(70)
                 st.info("💾 Salvando transcrição...")
                 salvar_txt(texto, txt_path)
-                
+
                 progress.progress(90)
                 st.info("📄 Formatando transcrição para .docx...")
                 formatar_para_word(texto, docx_path)
-                
+
                 progress.progress(100)
                 st.success("✅ Transcrição concluída!")
 
@@ -83,10 +92,10 @@ if st.button("Transcrever"):
 
         except Exception as e:
             st.error(f"❌ Ocorreu um erro: {e}")
-    
+
 st.markdown("""
-        <hr style="margin-top: 3rem; margin-bottom: 1rem;">
-        <p style='text-align: center; font-size: 0.875rem; color: gray;'>
-        Desenvolvido por <b>Ronald César</b> • Versão 1.0
-        </p>
-        """, unsafe_allow_html=True)
+<hr style="margin-top: 3rem; margin-bottom: 1rem;">
+<p style='text-align: center; font-size: 0.875rem; color: gray;'>
+Desenvolvido por <b>Ronald César</b> • Versão 1.0
+</p>
+""", unsafe_allow_html=True)
