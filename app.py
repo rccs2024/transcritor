@@ -4,23 +4,19 @@ import whisper
 import os
 import re
 import tempfile
-import ffmpeg
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
-    """Baixa o áudio em formato .webm sem pós-processamento com ffmpeg"""
+    """Baixa o áudio como MP3 diretamente com yt-dlp (sem ffmpeg externo)"""
     result = subprocess.run([
-        "yt-dlp", "-f", "bestaudio[ext=webm]",
+        "yt-dlp",
+        "-x", "--audio-format", "mp3",
         "-o", saida_audio,
         video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    
+
     if result.returncode != 0:
         raise Exception(f"Erro ao baixar áudio:\n{result.stderr}")
-
-def converter_para_wav(input_path: str, output_path: str):
-    """Converte .webm para .wav usando ffmpeg-python"""
-    ffmpeg.input(input_path).output(output_path).run(overwrite_output=True)
 
 def transcrever_audio(modelo: str, arquivo_audio: str) -> str:
     model = whisper.load_model(modelo)
@@ -44,7 +40,7 @@ def formatar_para_word(texto: str, caminho_docx: str):
 # ------------------ INTERFACE STREAMLIT ------------------ #
 
 st.markdown("""
-<h1 style='text-align: center; color: ; margin-bottom: 1rem;'>
+<h1 style='text-align: center; margin-bottom: 1rem;'>
 🎧 Transcritor de Vídeo YouTube com Whisper
 </h1>
 """, unsafe_allow_html=True)
@@ -58,22 +54,17 @@ if st.button("Transcrever"):
         try:
             progress = st.progress(0)
             with tempfile.TemporaryDirectory() as temp_dir:
-                audio_webm = os.path.join(temp_dir, "audio.webm")
-                audio_wav = os.path.join(temp_dir, "audio.wav")
+                audio_path = os.path.join(temp_dir, "audio.mp3")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
 
                 progress.progress(10)
                 st.info("🔄 Baixando áudio...")
-                baixar_audio(video_url, audio_webm)
+                baixar_audio(video_url, audio_path)
 
-                progress.progress(30)
-                st.info("🔁 Convertendo áudio para WAV...")
-                converter_para_wav(audio_webm, audio_wav)
-
-                progress.progress(50)
+                progress.progress(40)
                 st.info("🧠 Transcrevendo áudio com Whisper...")
-                texto = transcrever_audio("base", audio_wav)
+                texto = transcrever_audio("base", audio_path)
 
                 progress.progress(70)
                 st.info("💾 Salvando transcrição...")
