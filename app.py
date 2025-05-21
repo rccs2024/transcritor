@@ -7,14 +7,15 @@ import tempfile
 from docx import Document
 
 def baixar_audio(video_url: str, saida_audio: str):
-    """Baixa o áudio em formato .webm compatível com Streamlit Cloud"""
+    """Baixa o áudio como MP3 para compatibilidade no Streamlit Cloud"""
     result = subprocess.run([
         "yt-dlp",
-        "-f", "bestaudio[ext=webm]",
+        "--extract-audio",
+        "--audio-format", "mp3",
         "-o", saida_audio,
         video_url
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    
+
     if result.returncode != 0:
         raise Exception(f"Erro ao baixar áudio:\n{result.stderr}")
 
@@ -54,17 +55,22 @@ if st.button("Transcrever"):
         try:
             progress = st.progress(0)
             with tempfile.TemporaryDirectory() as temp_dir:
-                audio_path = os.path.join(temp_dir, "audio.webm")
+                audio_path = os.path.join(temp_dir, "audio.%(ext)s")  # yt-dlp substitui %(ext)s
+                audio_mp3 = os.path.join(temp_dir, "audio.mp3")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
                 
                 progress.progress(10)
                 st.info("🔄 Baixando áudio...")
                 baixar_audio(video_url, audio_path)
+
+                # Após download, yt-dlp deve criar algo como audio.mp3
+                downloaded_file = [f for f in os.listdir(temp_dir) if f.endswith(".mp3")][0]
+                downloaded_audio_path = os.path.join(temp_dir, downloaded_file)
                 
                 progress.progress(40)
                 st.info("🧠 Transcrevendo áudio com Whisper...")
-                texto = transcrever_audio("base", audio_path)
+                texto = transcrever_audio("base", downloaded_audio_path)
                 
                 progress.progress(70)
                 st.info("💾 Salvando transcrição...")
