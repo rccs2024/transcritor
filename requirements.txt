@@ -1,5 +1,5 @@
 streamlit
 yt-dlp
-openai-whisper
+git+https://github.com/openai/whisper.git
 python-docx
 torch
