@@ -38,7 +38,7 @@ def formatar_para_word(texto: str, caminho_docx: str):
 
 #st.title("🎧 Transcritor de Vídeo YouTube com Whisper")
 st.markdown("""
-<h1 style='text-align: center; color: white; margin-bottom: 1rem;'>
+<h1 style='text-align: center; color: black; margin-bottom: 1rem;'>
 🎧 Transcritor de Vídeo YouTube com Whisper
 </h1>
 """, unsafe_allow_html=True)
