@@ -54,7 +54,7 @@ if st.button("Transcrever"):
         try:
             progress = st.progress(0)
             with tempfile.TemporaryDirectory() as temp_dir:
-                audio_path = os.path.join(temp_dir, "audio.mp3")
+                audio_path = os.path.join(temp_dir, "audio.webm")
                 txt_path = os.path.join(temp_dir, "transcricao.txt")
                 docx_path = os.path.join(temp_dir, "transcricao.docx")
                 
