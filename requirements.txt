@@ -1,4 +1,5 @@
 streamlit
+openai-whisper
 yt-dlp
 python-docx
-git+https://github.com/openai/whisper.git
+ffmpeg-python
